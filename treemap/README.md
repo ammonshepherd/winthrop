@@ -3,3 +3,6 @@
 
 # Visualization:
 - books with subjects by # (larger number larger size square)
+
+# References:
+- https://bl.ocks.org/mbostock/4063582
