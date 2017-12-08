@@ -2,49 +2,46 @@ $(document).ready(function () {
   var bubbleChart = new d3.svg.BubbleChart({
     supportResponsive: true,
     //container: => use @default
-    size: 600,
+    size: 2000,
     //viewBoxSize: => use @default
-    innerRadius: 600 / 3.5,
+    innerRadius: 500 / 3.5,
     //outerRadius: => use @default
     radiusMin: 50,
-    //radiusMax: use @default
+    radiusMax: 200,
     //intersectDelta: use @default
     //intersectInc: use @default
     //circleColor: use @default
     data: {
       items: [
-        {text: "Java", count: "236"},
-        {text: ".Net", count: "382"},
-        {text: "Php", count: "170"},
-        {text: "Ruby", count: "123"},
-        {text: "D", count: "12"},
-        {text: "Python", count: "170"},
-        {text: "C/C++", count: "382"},
-        {text: "Pascal", count: "10"},
-        {text: "Something", count: "170"},
+        {text: "Ander Theil", count: "3"}, 
+        {text: "Apocalypsis Iesu Christi", count: "5"}, 
+        {text: "Catalogus scriptorum Florentinorum", count: "3"}, 
+        {text: "Cheiragogia", count: "2"}, 
+        {text: "Colloquiorum", count: "3"}, 
+        {text: "Fortalitium Scientiae", count: "2"}, 
+        {text: "Gallicae linguae institutio", count: "3"}, 
+        {text: "Isagoge optica", count: "1"}, 
+        {text: "L'elixir des philosophes", count: "8"}, 
+        {text: "Orbis Miraculum", count: "4"}, 
+        {text: "The complaint of Roderyck Mors", count: "1"}, 
+        {text: "The foure chiefest", count: "1"}, 
+        {text: "The image of governance", count: "2"}, 
+        {text: "Triga chemica", count: "2"}, 
+        {text: "Variet di secreti", count: "2"}, 
+        {text: "Veterinaria medicina", count: "3"}, 
+        /*
+        {text: "The Roman historie", count: "15"}, 
+        {text: "Chronologia sacra", count: "20"}, 
+        {text: "Flores", count: "21"},
+        {text: "De republica Anglorum", count: "31"}, 
+        {text: "The Triall of Witch-craft", count: "40"}, 
+        {text: "Princeps", count: "52"}, 
+        */
       ],
       eval: function (item) {return item.count;},
       classed: function (item) {return item.text.split(" ").join("");}
     },
     plugins: [
-      {
-        name: "central-click",
-        options: {
-          text: "(See more detail)",
-          style: {
-            "font-size": "12px",
-            "font-style": "italic",
-            "font-family": "Source Sans Pro, sans-serif",
-            //"font-weight": "700",
-            "text-anchor": "middle",
-            "fill": "white"
-          },
-          attr: {dy: "65px"},
-          centralClick: function() {
-            alert("Here is more details!!");
-          }
-        }
-      },
       {
         name: "lines",
         options: {

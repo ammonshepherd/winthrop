@@ -1,9 +1,11 @@
 import collections
 from collections import Counter
 import pandas as pd
+import numpy as np
 import json
 import csv
 import ast
+import textwrap
 
 # The CSV file as source (actually just the four columns from the original
 # source file)
@@ -11,9 +13,6 @@ import ast
 csvfile = 'annotator-subject-tag-book.csv'
 
 # Create an empty JSON object with the first element as an empty
-jsonobj = {}
-jsonobj['nodes'] = []
-jsonobj['links'] = []
 nodes = []
 
 
@@ -79,12 +78,9 @@ addnode(subjs)
 addnode(tags)
 addnode(books)
 
-# Make the list of all the things into the JSON Object
-nodify(nodes, "name")
-
 
 ####
-#  Create the links section
+#  Create CSV with all subjects and tags separated out
 ####
 
 # Rebuild the CSV by iterating through each row, if there is a row that has
@@ -131,64 +127,37 @@ with open('separatedrows.csv', 'w') as myfile:
     for r in finalrows:
         wr.writerow(r)
 
+####
+# Counts frequency of a book
+####
+allnotes = pd.read_csv('separatedrows.csv')
+bookorder = allnotes.groupby('books').count()
 
+bookvalues = bookorder.values.tolist()
+booklist = {}
+booklist['items'] = []
+popular = []
+for index, row in bookorder.iterrows():
+    # Convert the numpy int to one that JSON will like. Without this, can't
+    # write to json file below
+    # see https://stackoverflow.com/questions/9452775/converting-numpy-dtypes-to-native-python-types/11389998#11389998
+    num = np.asscalar(np.int16(row[0]))
+    booklist['items'].append(dict(text=index, count=num))
+    strnum = str(num)
+    title = textwrap.shorten(index, width=30, placeholder='')
+    # Should use sub instead so I can use a regex, but this is faster for given
+    # time...
+    title = title.replace('[', '')
+    title = title.replace(']', '')
+    title = title.replace('.', '')
+    popular.append(list([ title,strnum ]))
 
-# Counts how many times each row is duplicated, and that number is the value in
-# the links array
-with open('separatedrows.csv') as f:
-    c = Counter(f)
-    dups = [t for t in c.most_common() if t[1] > 0]
-    dups_dict = {row: count for row, count in c.most_common() if count > 0}
-
-
-
-# for each row in csv, find array id for each author, subject, tag, and book
-# listed, then make a links object for author -> subject, subject -> tag, tag ->
-# book.
-# Create second part of JSON object in the format:
-# "links": [
-#       {
-#           "source": S,
-#           "target": T,
-#           "value": V
-#       }
-#   ]
-# Where V is the number of how many times the row was duplicated
-
-# This count doesn't need to be in there..
-del dups_dict['"annotator","subjects","tags","books"\n']
-#newdups = [i for i in dups if i[0] != '"annotator","subjects","tags","books"\n']
-
-# For use in the Google Chart version
-gcode = []
-for key, value in dups_dict.items():
-    # key is a string that looks like a list, but isn't, so can't split on ,
-    # because there are commas within the list 'element'. So use literal_eval
-    # to turn it into a real list
-    things = ast.literal_eval(key)
-
-    source1 = nodes.index(things[0].strip('"'))
-    target1 = nodes.index(things[1].strip('"'))
-    jsonobj['links'].append(dict(source=source1,target=target1,value=value))
-    gcode.append([things[0], things[1], value])
-
-    source2 = nodes.index(things[1])
-    target2 = nodes.index(things[2])
-    jsonobj['links'].append(dict(source=source2,target=target2,value=value))
-    gcode.append([things[1], things[2], value])
-
-    source3 = nodes.index(things[2])
-    target3 = nodes.index(things[3])
-    jsonobj['links'].append(dict(source=source3,target=target3,value=value))
-    gcode.append([things[2], things[3], value])
-
+with open('popular.csv', 'w') as csvfile:
+    csvfile.write("id,value\n")
+    for items in popular:
+        csvfile.write('"'+items[0]+'",'+items[1]+"\n")
 
 # Write the JSON object to a file
-with open('astb.json', 'w') as outfile:
-    json.dump(jsonobj, outfile)
+with open('books.json', 'w') as jsfile:
+    jsfile.write(json.dumps(booklist))
 
-
-# print out the gcode to copy/paste into the gchart.html.
-# Need to figure out how to get GChart to use a file, then write the gcode list
-# to a CSV or JSON file instead.
-#print(gcode)
